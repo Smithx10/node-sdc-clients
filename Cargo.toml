@@ -1,0 +1,25 @@
+[package]
+name = "rust-sdc-clients"
+version = "0.1.0"
+authors = ["smith"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uuid = { version = "", features = [ "serde" ] }
+url = ""
+reqwest = { version = "", features = [ "json" ] }
+tokio = { version = "", features = [ "full" ] }
+serde = { version = "", features = ["derive"] }
+serde_json = ""
+serde_with = { version = "", features = ["json"] }
+schemars = { version = "", features = ["uuid", "chrono"] }
+strum = { version = "0.19", features = ["derive"] }
+anyhow = { version = "" }
+chrono = { version = "", features = ["serde"] }
+eui48 = { version = "", features = ["serde"] }
+
+# Use anyhow crate
+# https://docs.rs/anyhow/1.0.33/anyhow/
+# https://docs.rs/thiserror/1.0.21/thiserror/

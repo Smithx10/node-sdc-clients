@@ -10,3 +10,8 @@ cscope.out
 *.vim
 npm-shrinkwrap.json.old
 .DS_Store
+
+
+# Added by cargo
+
+/target
