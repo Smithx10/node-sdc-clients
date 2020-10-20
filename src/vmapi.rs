@@ -238,24 +238,39 @@ pub struct Vm {
 }
 
 impl Vm {
-    pub fn to_machine(&self) -> Machine {
-        let disk: Option<i32>;
+    // TODO: Understand Credentials, and Encrypted
+    pub fn to_machine(&self, credentials: bool) -> Machine {
+        let mut disk: Option<i32> = None;
         if self.flexible_disk_size.is_some() {
             disk = Some(self.flexible_disk_size.unwrap());
         } else if self.disks.is_some() {
             disk = Some(self.disks.clone().unwrap()[1].size.unwrap());
-        } else {
-            disk = None;
         }
 
-        let image: <Option<Uuid>;
+        let mut image: Option<Uuid> = None;
         if self.image_uuid.is_some() {
             image = self.image_uuid.clone();
+        } else if self.disks.is_some() {
+            image = self.disks.clone().unwrap()[0].image_uuid.clone();
         }
-        else if self.disks.is_some() {
-            image = self.disks.clone().unwrap()[0].image_uuid.unwrap();
+        let mut ips: Option<Vec<IpAddr>> = None;
+        let mut networks: Option<Vec<Uuid>> = None;
+        let mut primary_ip: Option<IpAddr> = None;
+        if self.nics.is_some() {
+            let mut ipVec: Vec<IpAddr> = Vec::new();
+            let mut networksVec: Vec<Uuid> = Vec::new();
+            for nic in self.nics.clone().unwrap().iter() {
+                ipVec.push(nic.ip);
+                networksVec.push(nic.network_uuid);
+                if nic.primary.is_some() {
+                    if nic.primary.unwrap() {
+                        primary_ip = Some(nic.ip);
+                    }
+                }
+            }
+            ips = Some(ipVec);
+            networks = Some(networksVec);
         }
-
 
         let machine = Machine {
             id: self.uuid,
@@ -278,13 +293,14 @@ impl Vm {
             docker: self.docker.clone().unwrap_or(false),
             nics: self.nics.clone(),
             disks: self.disks.clone(),
-            disk: disk, 
+            disk: disk,
             image: image,
-                        //networks: self.nk
-                        //ips: self.ips,
-                        //deletion_protection:
-                        //package:
-                        //credentials: self.cre
+            ips: ips,
+            primary_ip: primary_ip,
+            networks: networks,
+            deletion_protection: self.indestructible_zoneroot.clone(),
+            //package:
+            //credentials: self.cre
         };
 
         machine
@@ -503,7 +519,7 @@ pub struct Nic {
     gateways: Option<Vec<IpAddr>>,
     primary: Option<bool>,
     model: Option<NicModel>,
-    network_uuid: Option<Uuid>,
+    network_uuid: Uuid,
     mtu: Option<i32>,
 }
 
@@ -584,11 +600,12 @@ pub struct Machine {
     nics: Option<Vec<Nic>>,
     disks: Option<Vec<Disk>>,
     disk: Option<i32>,
-    image: Uuid,
-    //ips: Option<Vec<IpAddr>>,
-    //deletion_protection: Option<bool>,
-    //networks: Option<Vec<Uuid>>,
-    //primaryIp: Option<IpAddr>,
+    image: Option<Uuid>,
+    ips: Option<Vec<IpAddr>>,
+    #[serde(rename = "primaryIp")]
+    primary_ip: Option<IpAddr>,
+    networks: Option<Vec<Uuid>>,
+    deletion_protection: Option<bool>,
     //package: Option<String>,
     //credentials: Option<bool>,
 }
